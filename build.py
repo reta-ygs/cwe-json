@@ -70,7 +70,10 @@ if xml_file_path is None:
 # Step 4: Convert XML to JSON and write as separate files
 with open(xml_file_path, 'r') as xml_file:
     data_dict = xmltodict.parse(xml_file.read())
-    index_data = {}
+    index_data = {
+        "copyright": "Copyright © 2006–2023, The MITRE Corporation. CWE, CWSS, CWRAF, and the CWE logo are trademarks of The MITRE Corporation.",
+        "license": "CWE Usage: MITRE hereby grants you a non-exclusive, royalty-free license to use CWE for research, development, and commercial purposes. Any copy you make for such purposes is authorized on the condition that you reproduce MITRE’s copyright designation and this license in any such copy.",
+    }
 
     for entry in data_dict['Weakness_Catalog']['Weaknesses']['Weakness']:
         cwe_id = entry['@ID']
@@ -78,7 +81,12 @@ with open(xml_file_path, 'r') as xml_file:
 
         index_data[cwe_id] = name
 
-        json_data = json.dumps(entry)
+        cwe_entry = {
+            "cwe": entry,
+            "copyright": index_data["copyright"],
+            "license": index_data["license"],
+        }
+        json_data = json.dumps(cwe_entry)
 
         json_file_path = f'docs/{cwe_id}.json'
 
