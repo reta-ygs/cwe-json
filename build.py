@@ -70,12 +70,22 @@ if xml_file_path is None:
 # Step 4: Convert XML to JSON and write as separate files
 with open(xml_file_path, 'r') as xml_file:
     data_dict = xmltodict.parse(xml_file.read())
+    index_data = {}
 
     for entry in data_dict['Weakness_Catalog']['Weaknesses']['Weakness']:
-        entry_id = entry['@ID']
+        cwe_id = entry['@ID']
+        name = entry['@Name']
+
+        index_data[cwe_id] = name
+
         json_data = json.dumps(entry)
 
-        json_file_path = f'public/{entry_id}.json'
+        json_file_path = f'public/{cwe_id}.json'
 
         with open(json_file_path, 'w') as json_file:
             json_file.write(json_data)
+
+    # Write index.json
+    index_json_file_path = 'public/index.json'
+    with open(index_json_file_path, 'w') as index_json_file:
+        index_json_file.write(json.dumps(index_data))
