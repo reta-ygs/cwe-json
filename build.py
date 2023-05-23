@@ -11,17 +11,46 @@ if not os.path.exists('build'):
 if not os.path.exists('public'):
     os.makedirs('public')
 
-# Step 1: Download the ZIP file
+# Step 1: Download the ZIP file with headers
 zip_url = "https://cwe.mitre.org/data/xml/cwec_latest.xml.zip"
-response = requests.get(zip_url)
 
-# Step 2: Save the ZIP file
-zip_file_path = 'build/cwec_latest.xml.zip'
-with open(zip_file_path, 'wb') as zip_file:
-    zip_file.write(response.content)
+# Check if cache headers file exists
+cache_headers_file = 'cache-headers.txt'
+if os.path.exists(cache_headers_file):
+    # Read cache headers from file
+    with open(cache_headers_file, 'r') as headers_file:
+        headers = headers_file.read().splitlines()
+        etag_header = headers[0]
+        last_modified_header = headers[1]
 
-# Step 3: Extract the XML file
-with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    # Send conditional request with ETag and Last-Modified headers
+    response = requests.get(zip_url, headers={'If-None-Match': etag_header, 'If-Modified-Since': last_modified_header})
+
+    # Check if server responds with 304 Not Modified
+    if response.status_code == 304:
+        print("No changes since the last download.")
+        exit()
+else:
+    response = requests.get(zip_url)
+
+# Check if ZIP file needs to be saved
+if response.status_code == 200:
+    # Save the ZIP file
+    with open('build/cwec_latest.xml.zip', 'wb') as zip_file:
+        zip_file.write(response.content)
+
+    # Save cache headers to file
+    etag_header = response.headers.get('ETag', '')
+    last_modified_header = response.headers.get('Last-Modified', '')
+
+    with open(cache_headers_file, 'w') as headers_file:
+        headers_file.write(f"{etag_header}\n{last_modified_header}")
+else:
+    print("Failed to download the ZIP file.")
+    exit()
+
+# Extract the XML file
+with zipfile.ZipFile('build/cwec_latest.xml.zip', 'r') as zip_ref:
     zip_ref.extractall('build')
 
 # Find the extracted XML file
