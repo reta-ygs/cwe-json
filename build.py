@@ -8,8 +8,8 @@ import json
 if not os.path.exists('build'):
     os.makedirs('build')
 
-if not os.path.exists('public'):
-    os.makedirs('public')
+if not os.path.exists('docs'):
+    os.makedirs('docs')
 
 # Step 1: Download the ZIP file with headers
 zip_url = "https://cwe.mitre.org/data/xml/cwec_latest.xml.zip"
@@ -80,12 +80,12 @@ with open(xml_file_path, 'r') as xml_file:
 
         json_data = json.dumps(entry)
 
-        json_file_path = f'public/{cwe_id}.json'
+        json_file_path = f'docs/{cwe_id}.json'
 
         with open(json_file_path, 'w') as json_file:
             json_file.write(json_data)
 
     # Write index.json
-    index_json_file_path = 'public/index.json'
+    index_json_file_path = 'docs/index.json'
     with open(index_json_file_path, 'w') as index_json_file:
         index_json_file.write(json.dumps(index_data))
